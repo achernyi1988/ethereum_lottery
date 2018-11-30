@@ -3,7 +3,7 @@ pragma solidity ^0.4.17;
 contract Lottery {
     address public manager;
     address [] public players;
-    function Loterry() public {
+    function Lottery() public {
         manager = msg.sender;
     }
     
@@ -17,15 +17,12 @@ contract Lottery {
     }
     
     function pickWinner() public restricted payable {
-        
-  
-        
-        uint index = random() % players.length;
-        players[index].transfer(this.balance);
+        if(0 != players.length){
+            uint index = random() % players.length;
+            players[index].transfer(this.balance);
 
-        players = new address[] (0);
- 
-
+             players = new address[] (0);
+        }
     }
     function getPlayers() public view returns (address[] ){
         return players;

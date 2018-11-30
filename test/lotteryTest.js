@@ -4,10 +4,10 @@ const Web3 = require("web3");
 const web3 = new Web3(ganache.provider());
 const {interface, bytecode} = require("../compile");
 
-const INITIAL_MESSAGE_NAME = "Hi there";
 
 let accounts;
-let inbox;
+let lottery;
+
 beforeEach(async()=>{
     //Get a list of all accounts
 
@@ -16,59 +16,98 @@ beforeEach(async()=>{
     //Use one of the these accounts to deploy
     //the contract
 
-    inbox = await new web3.eth.Contract(JSON.parse(interface))
-        .deploy({data: bytecode, arguments: [INITIAL_MESSAGE_NAME]})
+    lottery = await new web3.eth.Contract(JSON.parse(interface))
+        .deploy({data: bytecode})
         .send({from: accounts[0], gas: "1000000"});
 
 });
 
-describe("Inbox", () => {
-    it ("deploy a contract", () => {
-        assert.ok(inbox.options.address);
+describe("Lottery contract",()=> {
+
+    it("deploys a contract", () => {
+       assert.ok(lottery.options.address);
+    });
+    it("enter check if player added", async ()=> {
+        await  lottery.methods.enter().send({
+            from: accounts[0],
+            value: web3.utils.toWei("0.02", "ether")
+        });
+        const players = await lottery.methods.getPlayers().call({
+            from: accounts[0]
+        });
+
+        assert.strictEqual(accounts[0], players[0]);
+        assert.strictEqual(1, players.length);
     });
 
-    it("has a default message", async () => {
-        const message = await inbox.methods.message().call();
-        assert.strictEqual(INITIAL_MESSAGE_NAME, message );
+    it("allows multiple accounts to enter", async ()=> {
+
+        let counter = 0;
+        await  lottery.methods.enter().send({
+            from: accounts[counter++],
+            value: web3.utils.toWei("0.02", "ether")
+        });
+        await  lottery.methods.enter().send({
+            from: accounts[counter++],
+            value: web3.utils.toWei("0.02", "ether")
+        });
+        await  lottery.methods.enter().send({
+            from: accounts[counter++],
+            value: web3.utils.toWei("0.02", "ether")
+        });
+        const players = await lottery.methods.getPlayers().call({
+            from: accounts[0]
+        });
+
+        assert.strictEqual(accounts[0], players[0]);
+        assert.strictEqual(accounts[1], players[1]);
+        assert.strictEqual(accounts[2], players[2]);
+        assert.strictEqual(counter, players.length);
+    });
+
+    it("requires a minimum amount of ether to enter", async ()=> {
+        console.log("requires a minimum amount of ether to enter");
+        try {
+        await  lottery.methods.enter().send({
+            from: accounts[0],      //low value.
+            value: web3.utils.toWei("1", "ether")
+        });
+    }catch(err) {
+            assert(false);
+    }
 
     });
-    it("modify message", async () => {
-        const newMessage = "a new message";
-        await inbox.methods.setMessage(newMessage).send({ from : accounts[0]});
-        const message = await inbox.methods.message().call();
-        assert.strictEqual(newMessage, message );
+    it("only manager can call pickWinner", async ()=> {
+        try {
+            await  lottery.methods.pickWinner().send({
+                from: accounts[0]
+            });
+        }catch (err) {
+            assert(false);
+        }
+    });
+    it("sends money to the winner and resets the players array", async() =>{
 
-    })
+        await  lottery.methods.enter().send({
+           from: accounts[0],
+           value:  web3.utils.toWei("2", "ether")
+        });
+
+        const initialBalance = await web3.eth.getBalance(accounts[0]);
+
+        await lottery.methods.pickWinner().send({from: accounts[0]});
+
+        const finalBalance = await web3.eth.getBalance(accounts[0]);
+
+        const difference = finalBalance - initialBalance;
+
+        assert(difference > web3.utils.toWei("1.8", "ether"));
+
+        const players = await lottery.methods.getPlayers().call({
+            from: accounts[0]
+        });
+
+        assert(players.length == 0);
+    });
+
 });
-
-
-
-//
-//
-//
-//
-//
-// class Car{
-//     park(){
-//         return "stopped";
-//     }
-//     drive(){
-//         return "drive";
-//     }
-// }
-// let car;
-// beforeEach(() => {
-//     car = new Car();
-//
-//
-// });
-// describe("Car",() => {
-//     it("can park",() => {
-//
-//         assert.strictEqual(car.park(), "stopped");
-//     });
-//     it("can drive",() => {
-//
-//         assert.strictEqual(car.drive(), "drive");
-//     });
-// });
