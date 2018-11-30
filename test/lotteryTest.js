@@ -66,19 +66,24 @@ describe("Lottery contract",()=> {
     });
 
     it("requires a minimum amount of ether to enter", async ()=> {
-        console.log("requires a minimum amount of ether to enter");
         try {
         await  lottery.methods.enter().send({
             from: accounts[0],      //low value.
-            value: web3.utils.toWei("1", "ether")
+            value: web3.utils.toWei("0", "ether")
         });
     }catch(err) {
-            assert(false);
+            // in case ether = 0, we report as test passed.
+            assert(true);
     }
 
     });
     it("only manager can call pickWinner", async ()=> {
         try {
+            await  lottery.methods.enter().send({
+                from: accounts[0],
+                value: web3.utils.toWei("1", "ether")
+            });
+
             await  lottery.methods.pickWinner().send({
                 from: accounts[0]
             });

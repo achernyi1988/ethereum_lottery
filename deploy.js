@@ -20,5 +20,39 @@ const deploy = async () => {
         .send({gas: '1000000', from: accounts[0]});
 
     console.log("Contract deployed to", result.options.address);
+
+    // await  result.methods.enter().send({
+    //     from: accounts[0],
+    //     value:  web3.utils.toWei("0.000002", "ether"),
+    //     gas: '1000000'
+    // });
+    // const balance = await web3.eth.getBalance(accounts[0]);
+    // console.log("balance = ", balance);
+    //
+    // let players = await result.methods.getPlayers().call({
+    //     from: accounts[0]
+    // });
+    // console.log("players.length = ", players.length);
+    // await  result.methods.pickWinner().send({from: accounts[0], gas: '1000000'})
+    //     .once('transactionHash', function (txHash) {
+    //         console.log('transactionHash', txHash);
+    //     })
+    //     .once('confirmation', function(confirmationNumber, receipt) {
+    //         console.log('confirmation', confirmationNumber, receipt);
+    //     })
+    //     .once('receipt', function(receipt) {
+    //         console.log('receipt', receipt);
+    //     })
+    //     .once('error', function(error) {
+    //         console.log('error', error);
+    //     });
+    //
+    // const finalBalance = await web3.eth.getBalance(accounts[0]);
+    // console.log("finalBalance = ", finalBalance);
+    //
+    // players = await result.methods.getPlayers().call({
+    //     from: accounts[0]
+    // });
+    // console.log("players.length after  pickWinner = ", players.length);
 };
 deploy();

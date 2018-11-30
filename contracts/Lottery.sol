@@ -8,7 +8,7 @@ contract Lottery {
     }
     
     function enter() public payable {
-        require(msg.value > .01 ether);
+        require(msg.value > .000001 ether);
         players.push(msg.sender);
     }
     
@@ -28,9 +28,17 @@ contract Lottery {
         return players;
     }
     
-    modifier restricted(){
+    modifier managerRestricted(){
         require(msg.sender == manager);
         _;
     }
+
+    modifier playerRestricted(){
+        require(0 != players.length);
+        _;
+    }
+
+
+
     
 }
