@@ -16,7 +16,7 @@ contract Lottery {
         return uint(sha256(block.difficulty, now, players));
     }
     
-    function pickWinner() public restricted payable {
+    function pickWinner() public managerRestricted playerRestricted payable {
         if(0 != players.length){
             uint index = random() % players.length;
             players[index].transfer(this.balance);
